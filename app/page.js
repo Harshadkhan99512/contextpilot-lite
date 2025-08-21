@@ -4,7 +4,9 @@ import { useState } from "react";
 
 export default function Page() {
   const [input, setInput] = useState("");
-  const [msgs, setMsgs] = useState([{ role: "assistant", content: "Hi! 👋 I’m ContextPilot’s demo. Ask me anything to see live streaming." }]);
+  const [msgs, setMsgs] = useState([
+    { role: "assistant", content: "Hi! 👋 I’m ContextPilot’s demo. Ask me anything to see live streaming." }
+  ]);
   const [busy, setBusy] = useState(false);
 
   async function ask() {
@@ -13,18 +15,22 @@ export default function Page() {
     setMsgs((m) => [...m, { role: "user", content: q }]);
     setInput("");
     setBusy(true);
-    const res = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: q }) });
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ prompt: q })
+    });
     if (!res.body) { setMsgs((m)=>[...m,{role:"assistant",content:"Stream error."}]); setBusy(false); return; }
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let acc = "";
-    const index = msgs.length + 1;
+    const idx = msgs.length + 1;
     setMsgs((m)=>[...m, { role:"assistant", content:"" }]);
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       acc += decoder.decode(value);
-      setMsgs((m)=> m.map((mm,i)=> i===index ? { ...mm, content: acc } : mm));
+      setMsgs((m)=> m.map((mm,i)=> i===idx ? { ...mm, content: acc } : mm));
     }
     setBusy(false);
   }
